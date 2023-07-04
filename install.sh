@@ -1,3 +1,6 @@
 #!/bin/bash
 
-ln -s $(dirname $0)/src/gg.sh /usr/local/bin/gg
+declare curDir="$(dirname $0)"
+curDir="$(readlink -f $curDir)"
+
+ln -s "$curDir"/src/gg.sh /usr/local/bin/gg
