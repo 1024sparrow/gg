@@ -56,7 +56,10 @@ function gitStatus {
 					state=dir
 				elif [ $state == dir ]
 				then
-					echo $i
+					echo "--- $i ---"
+					pushd $i > /dev/null
+						git status
+					popd > /dev/null
 					state=head
 				elif [ $state == head ]
 				then
