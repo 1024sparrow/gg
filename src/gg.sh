@@ -37,6 +37,8 @@ done
 
 function gitStatus {
 	local curDir=$(pwd)
+	local state
+	local i
 	for ((iLevel = 0 ; iLevel <= 100 ; ++iLevel))
 	do
 		#echo ":: $iLevel"
@@ -46,7 +48,26 @@ function gitStatus {
 		fi
 		if [ -d .git ]
 		then
-			git status
+			state=hash
+			for i in $(git submodule status --recursive)
+			do
+				if [ $state == hash ]
+				then
+					state=dir
+				elif [ $state == dir ]
+				then
+					echo $i
+					state=head
+				elif [ $state == head ]
+				then
+					state=hash
+				fi
+			done
+
+			#while read line
+			#do
+			#	echo $line
+			#done < <(git submodule status --recursive)
 			return 0
 		else
 			pushd ..
