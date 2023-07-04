@@ -1,7 +1,22 @@
 #!/bin/bash
 
-declare iArg state=initial
+declare i iArg state=initial
 declare -a gitArguments
+
+function ERROR {
+	echo $1 >& 2
+	exit 1
+}
+
+function fTest {
+	for i in node git
+	do
+		if ! which $i > /dev/null
+		then
+			ERROR "Для работы утилиты необходимо установить в систему утилиту \"$i\""
+		fi
+	done
+}
 
 for iArg in "$@"
 do
@@ -15,22 +30,26 @@ gg - обёртка над системной утилитой git. Обеспе
 
 Получить текущее состояние всех git-submoodules текущего репозитория - gg status
 '
+		fTest
 		exit 0
 	fi
 done
-
-function ERROR {
-	echo $1 >& 2
-	exit 1
-}
 
 function gitStatus {
 	local curDir=$(pwd)
 	for ((iLevel = 0 ; iLevel <= 100 ; ++iLevel))
 	do
+		#echo ":: $iLevel"
 		if [ $iLevel -eq 100 ]
 		then
 			ERROR 'корневой репозиторий git не найден'
+		fi
+		if [ -d .git ]
+		then
+			git status
+			return 0
+		else
+			pushd ..
 		fi
 	done
 
