@@ -1,11 +1,10 @@
 #!/bin/bash
 
-declare iArg
+declare iArg state=initial
 declare -a gitArguments
 
 for iArg in "$@"
 do
-	#echo "[$iArg]"
 	if [ "$iArg" == --help ]
 	then
 		echo '
@@ -20,4 +19,18 @@ gg - обёртка над системной утилитой git. Обеспе
 	fi
 done
 
-for 
+function gitStatus {
+}
+
+for iArg in "$@"
+do
+	echo "[$iArg]"
+	if [ $state == initial ]
+	then
+		if [ "$iArg" == status ]
+		then
+			gitStatus
+			exit 0
+		fi
+	fi
+done
