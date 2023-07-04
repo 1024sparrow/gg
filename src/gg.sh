@@ -19,7 +19,22 @@ gg - обёртка над системной утилитой git. Обеспе
 	fi
 done
 
+function ERROR {
+	echo $1 >& 2
+	exit 1
+}
+
 function gitStatus {
+	local curDir=$(pwd)
+	for ((iLevel = 0 ; iLevel <= 100 ; ++iLevel))
+	do
+		if [ $iLevel -eq 100 ]
+		then
+			ERROR 'корневой репозиторий git не найден'
+		fi
+	done
+
+	ERROR 'not implemented'
 }
 
 for iArg in "$@"
