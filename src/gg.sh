@@ -48,6 +48,7 @@ function gitStatus {
 		fi
 		if [ -d .git ]
 		then
+			git status
 			state=hash
 			for i in $(git submodule status --recursive)
 			do
@@ -56,7 +57,9 @@ function gitStatus {
 					state=dir
 				elif [ $state == dir ]
 				then
-					echo "--- $i ---"
+					echo "
+------- $i -------
+"
 					pushd $i > /dev/null
 						git status
 					popd > /dev/null
@@ -73,7 +76,7 @@ function gitStatus {
 			#done < <(git submodule status --recursive)
 			return 0
 		else
-			pushd ..
+			pushd .. > /dev/null
 		fi
 	done
 
