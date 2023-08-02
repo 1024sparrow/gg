@@ -272,7 +272,7 @@ function startTask {
 Выберите задачу:'
 	for i in ${tasksNotStarted[@]}
 	do
-		echo "$n. https://jira.locotech-signal.ru/browse/HMI-$i ($(cat tasks/$DEVELOP_BRANCH/$i.shortname))"
+		echo "$n. tasks/all/HMI-$i ($(cat tasks/$DEVELOP_BRANCH/$i.shortname))"
 		n+=1
 	done
 	read -p 'Ваш выбор: ' n
@@ -282,7 +282,7 @@ function startTask {
 		tmp=${tasksNotStarted[$((n-1))]}
 		ln -s $INTERNALS_DIRECTORY/task task
 		echo $tmp > $INTERNALS_DIRECTORY/taskId
-		echo "Задача [Jira (HMI-$tmp)](https://jira.locotech-signal.ru/browse/HMI-$tmp)
+		echo "Задача [Jira (HMI-$tmp)](tasks/all/HMI-$tmp)
 
 $(cat tasks/$DEVELOP_BRANCH/$tmp)" > $INTERNALS_DIRECTORY/task
 		echo 0 > $INTERNALS_DIRECTORY/taskVersion
