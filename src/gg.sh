@@ -8,6 +8,12 @@ function ERROR {
 	exit 1
 }
 
+RED='\e[0;31m'
+GREEN='\e[0;32m'
+YELLOW='\e[0;33m'
+#YELLOW='\e[0;33m\e[41m'  # на красном фоне
+NC='\033[0m' # No Color
+
 function fTest {
 	for i in node git
 	do
@@ -35,10 +41,186 @@ gg - обёртка над системной утилитой git. Обеспе
 	fi
 done
 
+function getIndent {
+	local argRetValIndent=$1
+	local argRoot=$2
+	local argPlace=$3
+
+	local tmp=$argPlace
+	local -i i
+
+	for ((i = 0 ; i < 100 ; ++i))
+	do
+		tmp=$(dirname $tmp)
+		if [ $tmp == "$argRoot" ]
+		then
+			tmp=
+			for ((ii=0 ; ii < $i ; ++ii))
+			do
+				#tmp="####$tmp"
+				tmp="    $tmp"
+			done
+			eval "$argRetValIndent=\"$tmp\""
+			return 0
+		fi
+	done
+	eval $argRetValIndent=
+}
+
+function showGitStatusPart {
+	local argRoot="$1"
+	local argSubroot="$2"
+
+	local state=0
+	local indent
+	getIndent indent $argRoot $argRoot/$argSubroot
+	#echo "getIndent indent $argRoot $argSubroot"
+	#echo "indent: \"$indent\""
+
+	:||'
+States:
+0 - initial
+1 - branch taken
+2 - up-to-date confirmed
+3 - not staged for commit
+4 - untracked files
+'
+
+	#echo -e " ${YELLOW}1234${NC}"
+	echo -en "$indent$YELLOW$argSubroot$NC"
+	while read line
+	do
+		if [ -z "$line" ]
+		then
+			state=1
+			echo
+		fi
+
+		if [ $state == 0 ]
+		then
+			if [[ "$line" =~ ^On\ branch ]]
+			then
+				echo -e " $RED[${line:10}]$NC"
+			else
+				echo
+				echo "$indent$line"
+			fi
+			state=1
+		else
+			if [[ "$line" =~ ^Your\ branch\ is\ up\ to\ date\ with ]]
+			then
+				:
+			elif [[ "$line" =~ ^nothing\ to\ commit ]]
+			then
+				:
+			elif [[ "$line" =~ ^Changes\ not\ staged\ for\ commit ]]
+			then
+				state=101
+			elif [[ "$line" =~ ^Untracked\ files ]]
+			then
+				state=102
+			#else
+			#	echo "			|$indent$line"
+			fi
+		fi
+
+		if [ $state == 101 ]
+		then
+			echo "${indent}Изменения, не включённые в коммит:"
+			state=201
+		elif [ $state == 201 ]
+		then
+			if [[ $line =~ ^\(use\  ]]
+			then
+				:
+			else
+				echo -e "$indent$RED$line$NC"
+			fi
+		elif [ $state == 102 ]
+		then
+			echo "${indent}Файлы, не попавшие под контроль версий:"
+			state=202
+		elif [ $state == 202 ]
+		then
+			if [[ $line =~ ^\(use\  ]]
+			then
+				:
+			else
+				echo -e "$indent$RED$line$NC"
+			fi
+		fi
+
+
+
+
+
+		#showGitStatusLine "$i" "$line"
+		#echo "-- $argSubroot -- $line"
+		:||'
+		if [ $state == 0 ]
+		then
+			if [[ "$line" =~ ^On\ branch ]]
+			then
+				echo "ON BRANCH \"${line:10}\""
+				state=1
+			else
+				echo ":] state 0: неожиданная строка: \"$line\""
+			fi
+		elif [ $state == 1 ]
+		then
+			if [[ "$line" =~ ^Your\ branch\ is\ up\ to\ date\ with ]]
+			then
+				echo "UP-TO-DATE CONFIRMED (synchronized)"
+			else
+				echo "$state%%%$line"
+			fi
+			state=2
+		elif [ $state == 2 ]
+		then
+			#echo "$indent$line"
+
+			if [[ "$line" =~ ^Changes\ not\ staged\ for\ commit ]]
+			then
+				echo "${indent}Изменения, не включённые в коммит:"
+				state=3
+			else
+				echo "$state%%%$line"
+			fi
+		elif [ $state == 3 ]
+		then
+			if [[ "$line" =~ ^modified: ]]
+			then
+				echo "${indent}    Изменено: ${line:9}"
+			elif [[ "$line" =~ ^Untracked\ files: ]]
+			then
+				echo "${indent}Файлы, не попавшие под контроль версий:"
+				state=4
+			else
+				echo "$state%%%$line"
+			fi
+		elif [ $state == 4 ]
+		then
+			if [[ "$line" =~ use\ add\	]]
+			then
+				:
+			elif [ -z "$line" ]
+			then
+				state=2
+			else
+				echo "$indent$line" # line уже с отступом
+			fi
+		else
+			echo "$state---$line"
+		fi
+'
+	done < <(git status )
+}
+
 function gitStatus {
 	local curDir=$(pwd)
 	local state
 	local i
+	local tmp
 	for ((iLevel = 0 ; iLevel <= 100 ; ++iLevel))
 	do
 		#echo ":: $iLevel"
@@ -57,11 +239,9 @@ function gitStatus {
 					state=dir
 				elif [ $state == dir ]
 				then
-					echo "
-------- $i -------
-"
+					tmp=$PWD
 					pushd $i > /dev/null
-						git status
+						showGitStatusPart "$tmp" "$i"
 					popd > /dev/null
 					state=head
 				elif [ $state == head ]
@@ -93,5 +273,15 @@ do
 			gitStatus
 			exit 0
 		fi
+		if [ "$iArg" == task ]
+		then
+			echo -n
+			#
+		fi
 	fi
 done
+
+if [ $state == initial ]
+then
+	gitStatus
+fi
