@@ -1,6 +1,20 @@
+gg
+	clone
+	task
+		list
+	diff
+	commit
+	push
+	config
+
+
+
+
+
+
 gg status
 ==========
-выводит "git status" для основного репозитория и всех подподулей
+выводит "git status" для основного репозитория и всех подмодулей
 
 gg task
 ========
