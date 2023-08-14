@@ -263,6 +263,64 @@ function gitStatus {
 	ERROR 'not implemented'
 }
 
+function gitStatus2 {
+	local -a stack=( "#" $PWD ) # Здесь храним тройки (отступ; директория)
+	local indent parent
+	local state
+	local -i counter=0
+	while [ ${#stack[@]} -gt 0 ]
+	do
+		if ((++counter > 10))
+		then
+			echo 'Зацикливание предотвращено'
+			break
+		fi
+		parent="${stack[0]}"
+		state=indent
+		for i in ${stack[@]}
+		do
+			if [ $state == indent ]
+			then
+				indent=$i
+				state=parent
+			elif [ $state == parent ]
+			then
+				parent=$i
+				state=finished
+			fi
+		done
+		stack=( "${stack[@]:1}" )
+		#echo "oooooooooo ${stack[@]}" #
+		echo "${indent}show git status for \"$parent\""
+		# добавляем дочерние элементы в стек
+		state=hash
+		pushd $parent > /dev/null
+			for i in $(git submodule status)
+			do
+				if [ $state == hash ]
+				then
+					state=dir
+				elif [ $state == dir ]
+				then
+					#echo "%%: $i"
+					stack=( "$indent#### $parent/$i" "${stack[@]}" )
+					state=head
+				elif [ $state == head ]
+				then
+					state=hash
+				fi
+			done
+		popd > /dev/null # boris here
+		#echo "tttttttttt ${stack[@]}" #
+		#for ii in "${stack[@]}"
+		#do
+		#	echo "[$ii]"
+		#done
+		#break #
+		#echo '=================='
+	done
+}
+
 for iArg in "$@"
 do
 	echo "[$iArg]"
@@ -270,7 +328,7 @@ do
 	then
 		if [ "$iArg" == status ]
 		then
-			gitStatus
+			gitStatus2
 			exit 0
 		fi
 		if [ "$iArg" == task ]
@@ -283,5 +341,5 @@ done
 
 if [ $state == initial ]
 then
-	gitStatus
+	gitStatus2
 fi
