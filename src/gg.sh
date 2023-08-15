@@ -266,21 +266,27 @@ function gitStatus {
 function gitStatus2 {
 	local -a stack=( "0 $PWD" ) # Здесь храним тройки (отступ; директория)
 	local -i indent
+	local strIndent
 	local parent
 	local state
 	local -i counter=0
 	local root=$PWD
 	while [ ${#stack[@]} -gt 0 ]
 	do
+		#echo '-------------------------'
 		if ((++counter > 10))
 		then
 			echo 'Зацикливание предотвращено'
 			break
 		fi
-		#echo "stack: ${stack[@]}"
+		parent="${stack[0]}"
+		stack=( "${stack[@]:1}" )
+		#echo "parent: \"$parent\"" #
+		#echo "stack: \"${stack[@]}\"" #
 		state=indent
-		for i in ${stack[@]}
+		for i in $parent
 		do
+			#echo "[$i]"
 			if [ $state == indent ]
 			then
 				indent=$i
@@ -291,14 +297,18 @@ function gitStatus2 {
 				state=finished
 			fi
 		done
-		#parent="${stack[0]}"
-		stack=( "${stack[@]:1}" )
-		#echo "oooooooooo ${stack[@]}" #
+		#echo "indent: \"$indent\"" #
+		#echo "parent: \"$parent\"" #
+		strIndent=
 		for ((i=0;i<$indent;++i))
 		do
-			echo -n '    '
+			strIndent="$strIndent    "
 		done
-		echo "show git status for \"$parent\""
+		echo "${strIndent}show git status for \"$parent\""
+		pushd $parent > /dev/null
+			#showGitStatusPart "$tmp" "$i" # boris here
+			#showGitStatusPart "$strIndent" # boris here
+		popd > /dev/null
 		# добавляем дочерние элементы в стек
 		state=hash
 		pushd $parent > /dev/null
@@ -309,7 +319,6 @@ function gitStatus2 {
 					state=dir
 				elif [ $state == dir ]
 				then
-					#echo "%%: $i"
 					stack=( "$((indent+1)) $parent/$i" "${stack[@]}" )
 					state=head
 				elif [ $state == head ]
@@ -317,14 +326,7 @@ function gitStatus2 {
 					state=hash
 				fi
 			done
-		popd > /dev/null # boris here
-		#echo "tttttttttt ${stack[@]}" #
-		#for ii in "${stack[@]}"
-		#do
-		#	echo "[$ii]"
-		#done
-		#break #
-		#echo '=================='
+		popd > /dev/null
 	done
 }
 
