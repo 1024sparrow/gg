@@ -41,32 +41,6 @@ gg - обёртка над системной утилитой git. Обеспе
 	fi
 done
 
-function getIndent {
-	local argRetValIndent=$1
-	local argRoot=$2
-	local argPlace=$3
-
-	local tmp=$argPlace
-	local -i i
-
-	for ((i = 0 ; i < 100 ; ++i))
-	do
-		tmp=$(dirname $tmp)
-		if [ $tmp == "$argRoot" ]
-		then
-			tmp=
-			for ((ii=0 ; ii < $i ; ++ii))
-			do
-				#tmp="####$tmp"
-				tmp="    $tmp"
-			done
-			eval "$argRetValIndent=\"$tmp\""
-			return 0
-		fi
-	done
-	eval $argRetValIndent=
-}
-
 function showGitStatusPart {
 	local argRoot="$1"
 	local argSubroot="$2"
@@ -217,53 +191,6 @@ States:
 }
 
 function gitStatus {
-	local curDir=$(pwd)
-	local state
-	local i
-	local tmp
-	for ((iLevel = 0 ; iLevel <= 100 ; ++iLevel))
-	do
-		#echo ":: $iLevel"
-		if [ $iLevel -eq 100 ]
-		then
-			ERROR 'корневой репозиторий git не найден'
-		fi
-		if [ -d .git ]
-		then
-			git status
-			state=hash
-			for i in $(git submodule status --recursive)
-			do
-				if [ $state == hash ]
-				then
-					state=dir
-				elif [ $state == dir ]
-				then
-					tmp=$PWD
-					pushd $i > /dev/null
-						showGitStatusPart "$tmp" "$i"
-					popd > /dev/null
-					state=head
-				elif [ $state == head ]
-				then
-					state=hash
-				fi
-			done
-
-			#while read line
-			#do
-			#	echo $line
-			#done < <(git submodule status --recursive)
-			return 0
-		else
-			pushd .. > /dev/null
-		fi
-	done
-
-	ERROR 'not implemented'
-}
-
-function gitStatus2 {
 	local -a stack=( "0 $PWD" ) # Здесь храним тройки (отступ; директория)
 	local -i indent
 	local strIndent
@@ -273,7 +200,6 @@ function gitStatus2 {
 	local root=$PWD
 	while [ ${#stack[@]} -gt 0 ]
 	do
-		#echo '-------------------------'
 		if ((++counter > 10))
 		then
 			echo 'Зацикливание предотвращено'
@@ -281,8 +207,6 @@ function gitStatus2 {
 		fi
 		parent="${stack[0]}"
 		stack=( "${stack[@]:1}" )
-		#echo "parent: \"$parent\"" #
-		#echo "stack: \"${stack[@]}\"" #
 		state=indent
 		for i in $parent
 		do
@@ -297,8 +221,6 @@ function gitStatus2 {
 				state=finished
 			fi
 		done
-		#echo "indent: \"$indent\"" #
-		#echo "parent: \"$parent\"" #
 		strIndent=
 		for ((i=0;i<$indent;++i))
 		do
@@ -337,7 +259,7 @@ do
 	then
 		if [ "$iArg" == status ]
 		then
-			gitStatus2
+			gitStatus
 			exit 0
 		fi
 		if [ "$iArg" == task ]
@@ -350,5 +272,5 @@ done
 
 if [ $state == initial ]
 then
-	gitStatus2
+	gitStatus
 fi
