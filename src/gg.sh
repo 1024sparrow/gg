@@ -90,6 +90,8 @@ States:
 			elif [[ "$line" =~ ^Untracked\ files ]]
 			then
 				state=102
+			# Changes to be committed
+
 			#else
 			#	echo "			|$indent$line"
 			fi
