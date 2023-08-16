@@ -11,8 +11,11 @@ function ERROR {
 RED='\e[0;31m'
 GREEN='\e[0;32m'
 YELLOW='\e[0;33m'
+BLUE='\e[0;36m'
 #YELLOW='\e[0;33m\e[41m'  # на красном фоне
 NC='\033[0m' # No Color
+
+COL_SUBMODULE=$BLUE
 
 function fTest {
 	for i in node git
@@ -42,14 +45,8 @@ gg - обёртка над системной утилитой git. Обеспе
 done
 
 function showGitStatusPart {
-	local argRoot="$1"
-	local argSubroot="$2"
-
 	local state=0
-	local indent
-	getIndent indent $argRoot $argRoot/$argSubroot
-	#echo "getIndent indent $argRoot $argSubroot"
-	#echo "indent: \"$indent\""
+	local indent="$1"
 
 	:||'
 States:
@@ -60,8 +57,8 @@ States:
 4 - untracked files
 '
 
-	#echo -e " ${YELLOW}1234${NC}"
-	echo -en "$indent$YELLOW$argSubroot$NC"
+	#echo -en "${strIndent}${YELLOW}show git status for \"$parent\"${NC}"
+	echo -en "${strIndent}${COL_SUBMODULE}$parent${NC}"
 	while read line
 	do
 		if [ -z "$line" ]
@@ -74,9 +71,9 @@ States:
 		then
 			if [[ "$line" =~ ^On\ branch ]]
 			then
-				echo -e " $RED[${line:10}]$NC"
+				echo -e " $RED[${line:10}]$NC$COL_SUBMODULE:$NC"
 			else
-				echo
+				echo -e "$COL_SUBMODULE:$NC"
 				echo "$indent$line"
 			fi
 			state=1
@@ -188,6 +185,7 @@ States:
 		fi
 '
 	done < <(git status )
+	echo
 }
 
 function gitStatus {
@@ -226,10 +224,8 @@ function gitStatus {
 		do
 			strIndent="$strIndent    "
 		done
-		echo "${strIndent}show git status for \"$parent\""
 		pushd $parent > /dev/null
-			#showGitStatusPart "$tmp" "$i" # boris here
-			#showGitStatusPart "$strIndent" # boris here
+			showGitStatusPart "$strIndent" # boris here
 		popd > /dev/null
 		# добавляем дочерние элементы в стек
 		state=hash
