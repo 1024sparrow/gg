@@ -46,7 +46,8 @@ done
 
 function showGitStatusPart {
 	local state=0
-	local indent="$1"
+	# parent доступен из родительской функции...
+	local indent="$2"
 
 	:||'
 States:
@@ -90,7 +91,7 @@ States:
 			elif [[ "$line" =~ ^Untracked\ files ]]
 			then
 				state=102
-			# Changes to be committed
+			# Changes to be committed # boris here. А также далее надо parent повписывать в modified, deleted etc.
 
 			#else
 			#	echo "			|$indent$line"
@@ -227,7 +228,7 @@ function gitStatus {
 			strIndent="$strIndent    "
 		done
 		pushd $parent > /dev/null
-			showGitStatusPart "$strIndent" # boris here
+			showGitStatusPart $parent "$strIndent"
 		popd > /dev/null
 		# добавляем дочерние элементы в стек
 		state=hash
