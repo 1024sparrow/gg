@@ -78,6 +78,12 @@ States:
 				echo "$indent$line"
 			fi
 			state=1
+		elif [ -z "$line" ]
+		then
+			state=1
+		elif [ "${state:1:1}" == 0 ]
+		then
+			:
 		else
 			if [[ "$line" =~ ^Your\ branch\ is\ up\ to\ date\ with ]]
 			then
@@ -91,28 +97,44 @@ States:
 			elif [[ "$line" =~ ^Untracked\ files ]]
 			then
 				state=102
-			# Changes to be committed # boris here. А также далее надо parent повписывать в modified, deleted etc.
+			elif [[ "$line" =~ ^Changes\ to\ be\ committed ]]
+			then
+				state=103
+			elif [[ "$line" =~ ^no\ changes\ added\ to\ commit ]]
+			then
+				:
 
-			#else
-			#	echo "			|$indent$line"
+			# boris e: А также далее надо parent повписывать в modified, deleted etc.
+
+			else
+				echo "			|$indent$line"
 			fi
 		fi
 
 		if [ $state == 101 ]
 		then
-			echo "${indent}Изменения, не включённые в коммит:"
+			echo "${indent}  Изменения, не включённые в коммит:"
 			state=201
 		elif [ $state == 201 ]
 		then
-			if [[ $line =~ ^\(use\  ]]
+			if [[ $line =~ ^\( ]]
 			then
 				:
+			elif [[ $line =~ ^modified: ]]
+			then
+				echo -e "$indent	$REDИзменено:    ${line:12}$NC"
+			elif [[ $line =~ ^typechange: ]]
+			then
+				echo -e "$indent	$REDИзм.права:   ${line:12}$NC"
+			elif [[ $line =~ ^deleted: ]]
+			then
+				echo -e "$indent	$REDУдалено:     ${line:12}$NC"
 			else
-				echo -e "$indent$RED$line$NC"
+				echo -e "$indent##$RED$line$NC"
 			fi
 		elif [ $state == 102 ]
 		then
-			echo "${indent}Файлы, не попавшие под контроль версий:"
+			echo "${indent}  Файлы, не попавшие под контроль версий:"
 			state=202
 		elif [ $state == 202 ]
 		then
@@ -120,8 +142,12 @@ States:
 			then
 				:
 			else
-				echo -e "$indent$RED$line$NC"
+				echo -e "$indent	$RED$line$NC"
 			fi
+		elif [ $state == 103 ]
+		then
+			echo "${indent}  Добавлены в грядущий коммит:"
+			state=201
 		fi
 
 
