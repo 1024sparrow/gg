@@ -15,7 +15,7 @@ BLUE='\e[0;36m'
 #YELLOW='\e[0;33m\e[41m'  # на красном фоне
 NC='\033[0m' # No Color
 
-COL_SUBMODULE=$BLUE
+COL_SUBMODULE='\e[0;41m'
 
 function fTest {
 	for i in node git
