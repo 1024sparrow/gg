@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# boris here:
+# - HEAD detached from
+# - (new commits, modified content)
+# - Your branch is ahead of 'origin/develop-v1.0.gg-3-status' by 1 commit
+
 declare i iArg state=initial
 declare -a gitArguments
 
@@ -13,6 +18,7 @@ GREEN='\e[0;32m'
 YELLOW='\e[0;33m'
 BLUE='\e[0;36m'
 #YELLOW='\e[0;33m\e[41m'  # на красном фоне
+UNDERLINE='\e[5;31m'
 NC='\033[0m' # No Color
 
 COL_SUBMODULE='\e[0;41m'
@@ -119,7 +125,12 @@ States:
 				:
 			elif [[ $line =~ ^modified: ]]
 			then
-				echo -e "$indent	$REDИзменено:    ${line:12}$NC"
+				if [[ $line =~ \(new\ commits,\ modified\ content\)$ ]]
+				then
+					echo -e "$indent	$UNDERLINEИзменено:    ${line:12: -32}$NC$RED (ссылка смещена, да и содержимое поменялось...)$NC"
+				else
+					echo -e "$indent	${RED}Изменено:    ${line:12}$NC"
+				fi
 			elif [[ $line =~ ^typechange: ]]
 			then
 				echo -e "$indent	$REDИзм.права:   ${line:12}$NC"
@@ -146,7 +157,6 @@ States:
 			echo "${indent}  Добавлены в грядущий коммит:"
 			state=201
 		fi
-
 
 
 
