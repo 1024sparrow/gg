@@ -103,9 +103,6 @@ States:
 			elif [[ "$line" =~ ^no\ changes\ added\ to\ commit ]]
 			then
 				:
-
-			# boris e: А также далее надо parent повписывать в modified, deleted etc.
-
 			else
 				echo "			|$indent$line"
 			fi
