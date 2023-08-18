@@ -79,9 +79,9 @@ States:
 		then
 			if [[ "$line" =~ ^On\ branch ]]
 			then
-				echo -e " $RED[${line:10}]$NC$COL_SUBMODULE:$NC"
+				echo -e " $RED[${line:10}]$NC $COL_SUBMODULE:$NC"
 			else
-				echo -e "$COL_SUBMODULE:$NC"
+				echo -e "$COL_SUBMODULE :$NC"
 				echo "$indent$line"
 			fi
 			state=1
