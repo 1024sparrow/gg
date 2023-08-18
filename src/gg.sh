@@ -18,7 +18,8 @@ GREEN='\e[0;32m'
 YELLOW='\e[0;33m'
 BLUE='\e[0;36m'
 #YELLOW='\e[0;33m\e[41m'  # на красном фоне
-UNDERLINE='\e[5;31m'
+#UNDERLINE='\e[5;31m'
+UNDERLINE='\e[4;31m'
 NC='\033[0m' # No Color
 
 COL_SUBMODULE='\e[0;41m'
@@ -120,6 +121,7 @@ States:
 			state=201
 		elif [ $state == 201 ]
 		then
+			color=$RED
 			if [[ $line =~ ^\( ]]
 			then
 				:
@@ -127,16 +129,22 @@ States:
 			then
 				if [[ $line =~ \(new\ commits,\ modified\ content\)$ ]]
 				then
-					echo -e "$indent	$UNDERLINEИзменено:    ${line:12: -32}$NC$RED (ссылка смещена, да и содержимое поменялось...)$NC"
+					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -32}$NC$RED (ссылка смещена, да и содержимое поменялось...)$NC"
 				else
-					echo -e "$indent	${RED}Изменено:    ${line:12}$NC"
+					echo -e "$indent	${color}Изменено:       ${line:12}$NC"
 				fi
 			elif [[ $line =~ ^typechange: ]]
 			then
-				echo -e "$indent	$REDИзм.права:   ${line:12}$NC"
+					echo -e "$indent	${color}Изм.права:      ${line:12}$NC"
 			elif [[ $line =~ ^deleted: ]]
 			then
-				echo -e "$indent	$REDУдалено:     ${line:12}$NC"
+					echo -e "$indent	${color}Удалено:        ${line:12}$NC"
+			elif [[ $line =~ ^new\ file: ]]
+			then
+					echo -e "$indent	${color}Новый файл:     ${line:12}$NC"
+			elif [[ $line =~ ^renamed: ]]
+			then
+					echo -e "$indent	${color}Переименовано:  ${line:12}$NC"
 			else
 				echo -e "$indent##$RED$line$NC"
 			fi
