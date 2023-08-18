@@ -2,8 +2,9 @@
 
 # boris here:
 # - HEAD detached from
-# - (new commits, modified content)
-# - Your branch is ahead of 'origin/develop-v1.0.gg-3-status' by 1 commit
+# - (new commits, modified content) - разбить ещё порознь чтоб тоже охватывалось
+# - Your branch is ahead of 'origin/develop-v1.0.gg-3-status' by 1 commit (пометка при указании пути до подмодуля
+# - относительные пути до подмодулей)
 
 declare i iArg state=initial
 declare -a gitArguments
@@ -17,6 +18,7 @@ RED='\e[0;31m'
 GREEN='\e[0;32m'
 YELLOW='\e[0;33m'
 BLUE='\e[0;36m'
+PINK='\e[0;35m'
 #YELLOW='\e[0;33m\e[41m'  # на красном фоне
 #UNDERLINE='\e[5;31m'
 UNDERLINE='\e[4;31m'
@@ -55,6 +57,7 @@ function showGitStatusPart {
 	local state=0
 	# parent доступен из родительской функции...
 	local indent="$2"
+	local color=$PINK # it is INVALID color
 
 	:||'
 States:
@@ -118,10 +121,11 @@ States:
 		if [ $state == 101 ]
 		then
 			echo "${indent}  Изменения, не включённые в коммит:"
+			color=$RED
 			state=201
 		elif [ $state == 201 ]
 		then
-			color=$RED
+			#color=$RED
 			if [[ $line =~ ^\( ]]
 			then
 				:
@@ -151,6 +155,7 @@ States:
 		elif [ $state == 102 ]
 		then
 			echo "${indent}  Файлы, не попавшие под контроль версий:"
+			color=$BLUE
 			state=202
 		elif [ $state == 202 ]
 		then
@@ -163,6 +168,7 @@ States:
 		elif [ $state == 103 ]
 		then
 			echo "${indent}  Добавлены в грядущий коммит:"
+			color=$GREEN
 			state=201
 		fi
 
