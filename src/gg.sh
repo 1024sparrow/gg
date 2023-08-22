@@ -135,10 +135,10 @@ States:
 					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -32}$NC$RED (ссылка смещена, да и содержимое поменялось...)$NC"
 				elif [[ $line =~ \(new\ commits\)$ ]]
 				then
-					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -32}$NC$RED (ссылка смещена)$NC"
+					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -23}$NC$RED (ссылка смещена)$NC"
 				elif [[ $line =~ \(modified\ content\)$ ]]
 				then
-					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -32}$NC$RED (содержимое поменялось...)$NC"
+					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -19}$NC$RED (содержимое поменялось...)$NC"
 				else
 					echo -e "$indent	${color}Изменено:       ${line:12}$NC"
 				fi
