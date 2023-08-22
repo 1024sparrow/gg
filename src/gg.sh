@@ -2,7 +2,6 @@
 
 # boris here:
 # - HEAD detached from
-# - (new commits, modified content) - разбить ещё порознь чтоб тоже охватывалось
 # - Your branch is ahead of 'origin/develop-v1.0.gg-3-status' by 1 commit (пометка при указании пути до подмодуля
 # - относительные пути до подмодулей)
 
@@ -134,6 +133,12 @@ States:
 				if [[ $line =~ \(new\ commits,\ modified\ content\)$ ]]
 				then
 					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -32}$NC$RED (ссылка смещена, да и содержимое поменялось...)$NC"
+				elif [[ $line =~ \(new\ commits\)$ ]]
+				then
+					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -32}$NC$RED (ссылка смещена)$NC"
+				elif [[ $line =~ \(modified\ content\)$ ]]
+				then
+					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -32}$NC$RED (содержимое поменялось...)$NC"
 				else
 					echo -e "$indent	${color}Изменено:       ${line:12}$NC"
 				fi
