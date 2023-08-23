@@ -251,6 +251,7 @@ function gitStatus {
 	local state
 	local -i counter=0
 	local root=$PWD
+	local i
 	for ((i = 0 ; i < 100 ; ++i))
 	do
 		if [ -d .git ]
