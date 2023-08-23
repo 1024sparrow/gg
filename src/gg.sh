@@ -244,62 +244,72 @@ States:
 }
 
 function gitStatus {
-	local -a stack=( "0 $PWD" ) # Здесь храним тройки (отступ; директория)
+	local -a stack # Здесь храним тройки (отступ; директория)
 	local -i indent
 	local strIndent
 	local parent
 	local state
 	local -i counter=0
 	local root=$PWD
-	while [ ${#stack[@]} -gt 0 ]
+	for ((i = 0 ; i < 100 ; ++i))
 	do
-		if ((++counter > 10))
+		if [ -d .git ]
 		then
-			echo 'Зацикливание предотвращено'
-			break
-		fi
-		parent="${stack[0]}"
-		stack=( "${stack[@]:1}" )
-		state=indent
-		for i in $parent
-		do
-			#echo "[$i]"
-			if [ $state == indent ]
-			then
-				indent=$i
-				state=parent
-			elif [ $state == parent ]
-			then
-				parent=$i
-				state=finished
-			fi
-		done
-		strIndent=
-		for ((i=0;i<$indent;++i))
-		do
-			strIndent="$strIndent    "
-		done
-		pushd $parent > /dev/null
-			showGitStatusPart $parent "$strIndent"
-		popd > /dev/null
-		# добавляем дочерние элементы в стек
-		state=hash
-		pushd $parent > /dev/null
-			for i in $(git submodule status)
+			stack=( "0 $PWD" )
+			while [ ${#stack[@]} -gt 0 ]
 			do
-				if [ $state == hash ]
+				if ((++counter > 10))
 				then
-					state=dir
-				elif [ $state == dir ]
-				then
-					stack=( "$((indent+1)) $parent/$i" "${stack[@]}" )
-					state=head
-				elif [ $state == head ]
-				then
-					state=hash
+					echo 'Зацикливание предотвращено'
+					break
 				fi
+				parent="${stack[0]}"
+				stack=( "${stack[@]:1}" )
+				state=indent
+				for i in $parent
+				do
+					#echo "[$i]"
+					if [ $state == indent ]
+					then
+						indent=$i
+						state=parent
+					elif [ $state == parent ]
+					then
+						parent=$i
+						state=finished
+					fi
+				done
+				strIndent=
+				for ((i=0;i<$indent;++i))
+				do
+					strIndent="$strIndent    "
+				done
+				pushd $parent > /dev/null
+					showGitStatusPart $parent "$strIndent"
+				popd > /dev/null
+				# добавляем дочерние элементы в стек
+				state=hash
+				pushd $parent > /dev/null
+					for i in $(git submodule status)
+					do
+						if [ $state == hash ]
+						then
+							state=dir
+						elif [ $state == dir ]
+						then
+							stack=( "$((indent+1)) $parent/$i" "${stack[@]}" )
+							state=head
+						elif [ $state == head ]
+						then
+							state=hash
+						fi
+					done
+				popd > /dev/null
 			done
-		popd > /dev/null
+			break
+		else
+			pushd ..
+		fi
 	done
 }
 
