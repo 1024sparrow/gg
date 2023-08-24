@@ -7,6 +7,7 @@
 
 declare i iArg state=initial
 declare -a gitArguments
+readonly THIS=$PWD
 
 function ERROR {
 	echo $1 >& 2
@@ -23,7 +24,8 @@ PINK='\e[0;35m'
 UNDERLINE='\e[4;31m'
 NC='\033[0m' # No Color
 
-COL_SUBMODULE='\e[0;41m'
+COL_SUBMODULE='\e[4;37m'
+COL_LOCALROOT='\e[2;37m'
 
 function fTest {
 	for i in node git
@@ -33,6 +35,18 @@ function fTest {
 			ERROR "Для работы утилиты необходимо установить в систему утилиту \"$i\""
 		fi
 	done
+}
+
+function relative {
+	local argPath=$1
+	local retVal=$(node -e "process.stdout.write(require('path').relative('$THIS', '$argPath'));")
+# boris here: / после . и ..
+	if [ -z "$retVal" ]
+	then
+		echo ./
+	else
+		echo "$retVal/"
+	fi
 }
 
 for iArg in "$@"
@@ -52,11 +66,14 @@ gg - обёртка над системной утилитой git. Обеспе
 	fi
 done
 
+[ -z "$(which node)" ] && ERROR 'Для работы утилиты необходимо наличие в системе nodejs (команда "node")'
+
 function showGitStatusPart {
 	local state=0
 	# parent доступен из родительской функции...
 	local indent="$2"
 	local color=$PINK # it is INVALID color
+	local localRoot=$(relative $parent)
 
 	:||'
 States:
@@ -68,7 +85,7 @@ States:
 '
 
 	#echo -en "${strIndent}${YELLOW}show git status for \"$parent\"${NC}"
-	echo -en "${strIndent}${COL_SUBMODULE}$parent${NC}"
+	echo -en "${strIndent}${COL_SUBMODULE}${localRoot:0:-1}${NC}"
 	while read line
 	do
 		if [ -z "$line" ]
@@ -81,9 +98,9 @@ States:
 		then
 			if [[ "$line" =~ ^On\ branch ]]
 			then
-				echo -e " $RED[${line:10}]$NC $COL_SUBMODULE:$NC"
+				echo -e " $BLUE[${line:10}]$NC :"
 			else
-				echo -e "$COL_SUBMODULE :$NC"
+				echo -e " :"
 				echo "$indent$line"
 			fi
 			state=1
@@ -132,28 +149,28 @@ States:
 			then
 				if [[ $line =~ \(new\ commits,\ modified\ content\)$ ]]
 				then
-					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -32}$NC$RED (ссылка смещена, да и содержимое поменялось...)$NC"
+					echo -e "$indent	${color}Изменено:       $COL_LOCALROOT$localRoot${UNDERLINE}${line:12: -32}$NC$color (ссылка смещена, да и содержимое поменялось...)$NC"
 				elif [[ $line =~ \(new\ commits\)$ ]]
 				then
-					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -23}$NC$RED (ссылка смещена)$NC"
+					echo -e "$indent	${color}Изменено:       $COL_LOCALROOT$localRoot${UNDERLINE}${line:12: -23}$NC$color (ссылка смещена)$NC"
 				elif [[ $line =~ \(modified\ content\)$ ]]
 				then
-					echo -e "$indent	${color}Изменено:       ${UNDERLINE}${line:12: -19}$NC$RED (содержимое поменялось...)$NC"
+					echo -e "$indent	${color}Изменено:       $COL_LOCALROOT$localRoot${UNDERLINE}${line:12: -19}$NC$color (содержимое поменялось...)$NC"
 				else
-					echo -e "$indent	${color}Изменено:       ${line:12}$NC"
+					echo -e "$indent	${color}Изменено:       $COL_LOCALROOT$localRoot$color${line:12}$NC"
 				fi
 			elif [[ $line =~ ^typechange: ]]
 			then
-					echo -e "$indent	${color}Изм.права:      ${line:12}$NC"
+					echo -e "$indent	${color}Изм.права:      $COL_LOCALROOT$localRoot$color${line:12}$NC"
 			elif [[ $line =~ ^deleted: ]]
 			then
-					echo -e "$indent	${color}Удалено:        ${line:12}$NC"
+					echo -e "$indent	${color}Удалено:        $COL_LOCALROOT$localRoot$color${line:12}$NC"
 			elif [[ $line =~ ^new\ file: ]]
 			then
-					echo -e "$indent	${color}Новый файл:     ${line:12}$NC"
+					echo -e "$indent	${color}Новый файл:     $COL_LOCALROOT$localRoot$color${line:12}$NC"
 			elif [[ $line =~ ^renamed: ]]
 			then
-					echo -e "$indent	${color}Переименовано:  ${line:12}$NC"
+					echo -e "$indent	${color}Переименовано:  $COL_LOCALROOT$localRoot$color${line:12}$NC"
 			else
 				echo -e "$indent##$RED$line$NC"
 			fi
@@ -168,7 +185,7 @@ States:
 			then
 				:
 			else
-				echo -e "$indent	$RED$line$NC"
+				echo -e "$indent	$COL_LOCALROOT$localRoot$RED$line$NC"
 			fi
 		elif [ $state == 103 ]
 		then
