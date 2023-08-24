@@ -1,9 +1,10 @@
 #!/bin/bash
 
-# boris here:
+# boris tasks:
 # - HEAD detached from
 # - Your branch is ahead of 'origin/develop-v1.0.gg-3-status' by 1 commit (пометка при указании пути до подмодуля
-# - относительные пути до подмодулей)
+
+boris here: приступаю к формированию задач
 
 declare i iArg state=initial
 declare -a gitArguments
@@ -40,7 +41,6 @@ function fTest {
 function relative {
 	local argPath=$1
 	local retVal=$(node -e "process.stdout.write(require('path').relative('$THIS', '$argPath'));")
-# boris here: / после . и ..
 	if [ -z "$retVal" ]
 	then
 		echo ./
