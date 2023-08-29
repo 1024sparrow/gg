@@ -4,7 +4,7 @@
 # - HEAD detached from
 # - Your branch is ahead of 'origin/develop-v1.0.gg-3-status' by 1 commit (пометка при указании пути до подмодуля
 
-boris here: приступаю к формированию задач
+#boris here: приступаю к формированию задач
 
 declare i iArg state=initial
 declare -a gitArguments
@@ -152,10 +152,10 @@ States:
 					echo -e "$indent	${color}Изменено:       $COL_LOCALROOT$localRoot${UNDERLINE}${line:12: -32}$NC$color (ссылка смещена, да и содержимое поменялось...)$NC"
 				elif [[ $line =~ \(new\ commits\)$ ]]
 				then
-					echo -e "$indent	${color}Изменено:       $COL_LOCALROOT$localRoot${UNDERLINE}${line:12: -23}$NC$color (ссылка смещена)$NC"
+					echo -e "$indent	${color}Изменено:       $COL_LOCALROOT$localRoot${UNDERLINE}${line:12: -14}$NC$color (ссылка смещена)$NC"
 				elif [[ $line =~ \(modified\ content\)$ ]]
 				then
-					echo -e "$indent	${color}Изменено:       $COL_LOCALROOT$localRoot${UNDERLINE}${line:12: -19}$NC$color (содержимое поменялось...)$NC"
+					echo -e "$indent	${color}Изменено:       $COL_LOCALROOT$localRoot${UNDERLINE}${line:12: -18}$NC$color (содержимое поменялось...)$NC"
 				else
 					echo -e "$indent	${color}Изменено:       $COL_LOCALROOT$localRoot$color${line:12}$NC"
 				fi
